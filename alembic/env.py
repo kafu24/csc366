@@ -5,6 +5,19 @@ from sqlalchemy import pool
 
 from alembic import context
 
+import os
+import dotenv
+
+def database_connection_url():
+    dotenv.load_dotenv()
+    DB_USER: str = os.environ.get("MYSQL_USER")
+    DB_PASSWD = os.environ.get("MYSQL_PWD")
+    DB_HOST: str = os.environ.get("MYSQL_HOST")
+    DB_PORT: str = os.environ.get("MYSQL_TCP_PORT")
+    DB_NAME: str = os.environ.get("MYSQL_DB")
+    return f"mysql+mysqldb://{DB_USER}:{DB_PASSWD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -38,9 +51,9 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    config.set_main_option("sqlalchemy.url", database_connection_url())
     context.configure(
-        url=url,
+        url=database_connection_url(),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -57,10 +70,12 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    config.set_main_option("sqlalchemy.url", database_connection_url())
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        url=database_connection_url(),
     )
 
     with connectable.connect() as connection:
