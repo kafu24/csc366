@@ -20,6 +20,7 @@ MYSQL_DB=""
 If you want, you could probably connect to the command line with these env variables
 as well:
 ```bash
+source .env
 mysql --host $MYSQL_HOST --user $MYSQL_USER --port $MYSQL_TCP_PORT $MYSQL_DB
 ```
 
