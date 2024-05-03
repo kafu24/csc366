@@ -17,6 +17,8 @@ MYSQL_TCP_PORT=""
 MYSQL_DB=""
 ```
 
+## Usage
+
 If you want, you could probably connect to the command line with these env variables
 as well:
 ```bash
