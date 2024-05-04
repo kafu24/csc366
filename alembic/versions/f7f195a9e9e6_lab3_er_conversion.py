@@ -34,56 +34,57 @@ def upgrade() -> None:
 
     op.create_table(
         "organization",
-        sa.Column("id", sa.Integer, primary_key=True, autoincrement=False),
+        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=False),
         sa.Column("address", sa.VARCHAR(255))
     )
 
     op.create_table(
         "organization_name",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization.id"), primary_key=True, autoincrement=False),
+        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization._id"), autoincrement=False),
         sa.Column("name", sa.VARCHAR(255))
     )
+    op.create_primary_key(None, "organization_name", ["organization_id", "name"])
 
     op.create_table(
         "organization_filer",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization.id"), primary_key=True, autoincrement=False),
+        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization._id"), primary_key=True, autoincrement=False),
         sa.Column("filer_id", sa.VARCHAR(255))
     )
 
     op.create_table(
         "person",
-        sa.Column("id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("first", sa.VARCHAR(255)),
-        sa.Column("middle", sa.VARCHAR(255)),
-        sa.Column("last", sa.VARCHAR(255))
+        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=False),
+        sa.Column("first_name", sa.VARCHAR(255)),
+        sa.Column("middle_name", sa.VARCHAR(255)),
+        sa.Column("last_name", sa.VARCHAR(255))
     )
 
     op.create_table(
         "individual_filer",
-        sa.Column("person_id", sa.Integer, sa.ForeignKey("person.id"), primary_key=True, autoincrement=False),
+        sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
         sa.Column("filer_id", sa.VARCHAR(255))
     )
 
     op.create_table(
         "contract_lobbyist",
-        sa.Column("person_id", sa.Integer, sa.ForeignKey("person.id"), primary_key=True, autoincrement=False),
+        sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
         sa.Column("completed_ethics_course", sa.Boolean)
     )
 
     op.create_table(
         "in_house_lobbyist",
-        sa.Column("person_id", sa.Integer, sa.ForeignKey("person.id"), primary_key=True, autoincrement=False),
+        sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
         sa.Column("completed_ethics_course", sa.Boolean)
     )
 
     op.create_table(
         "lobbying_firm",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization.id"), primary_key=True)
+        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization._id"), primary_key=True, autoincrement=False)
     )
 
     op.create_table(
         "permanent_employment",
-        sa.Column("lobbyist_id", sa.Integer, sa.ForeignKey("contract_lobbyist.person_id"), primary_key=True),
+        sa.Column("lobbyist_id", sa.Integer, sa.ForeignKey("contract_lobbyist.person_id"), primary_key=True, autoincrement=False),
         sa.Column("lobbying_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id")),
         sa.Column("601_filing_id", sa.Integer),
         sa.Column("601_amendment_id", sa.Integer),
@@ -93,7 +94,7 @@ def upgrade() -> None:
 
     op.create_table(
         "legislative_session",
-        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("_id", sa.Integer, primary_key=True),
         sa.Column("subcontracting_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id")),
         sa.Column("subcontracted_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id")),
         sa.Column("601_filing_id", sa.Integer),
@@ -103,7 +104,7 @@ def upgrade() -> None:
 
     op.create_table(
         "subcontract",
-        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("_id", sa.Integer, primary_key=True),
         sa.Column("subcontracting_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id")),
         sa.Column("subcontracted_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id")),
         sa.Column("601_filing_id", sa.Integer),
