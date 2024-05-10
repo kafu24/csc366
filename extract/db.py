@@ -4,7 +4,7 @@ import sqlalchemy as sa
 from sqlalchemy import create_engine
 
 
-def database_connection_url(db_name):
+def database_connection_url():
     dotenv.load_dotenv()
     DB_USER: str = os.environ.get("MYSQL_USER")
     DB_PASSWD = os.environ.get("MYSQL_PWD")
