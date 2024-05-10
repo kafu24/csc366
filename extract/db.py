@@ -4,14 +4,14 @@ import sqlalchemy as sa
 from sqlalchemy import create_engine
 
 
-def database_connection_url():
+def database_connection_url(db_name):
     dotenv.load_dotenv()
-    DB_USER: str = os.environ.get("POSTGRES_USER")
-    DB_PASSWD = os.environ.get("POSTGRES_PASSWORD")
-    DB_SERVER: str = os.environ.get("POSTGRES_SERVER")
-    DB_PORT: str = os.environ.get("POSTGRES_PORT")
-    DB_NAME: str = os.environ.get("POSTGRES_DB")
-    return f"postgresql://{DB_USER}:{DB_PASSWD}@{DB_SERVER}:{DB_PORT}/{DB_NAME}"
+    DB_USER: str = os.environ.get("MYSQL_USER")
+    DB_PASSWD = os.environ.get("MYSQL_PWD")
+    DB_HOST: str = os.environ.get("MYSQL_HOST")
+    DB_PORT: str = os.environ.get("MYSQL_TCP_PORT")
+    DB_NAME: str = os.environ.get("MYSQL_DB")
+    return f"mysql+mysqldb://{DB_USER}:{DB_PASSWD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 
 engine = create_engine(database_connection_url(), pool_pre_ping=True)
