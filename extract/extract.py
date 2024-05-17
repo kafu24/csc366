@@ -1,16 +1,25 @@
+import sqlalchemy
+import db
+
+
+with db.engine.begin() as connection:
+    lobbyist_reg = connection.execute(sqlalchemy.text("""
+        SELECT *
+        FROM (
+            SELECT FILING_ID, AMEND_ID, SENDER_ID, FILER_ID,
+                RANK() OVER (PARTITION BY FILING_ID ORDER BY AMEND_ID DESC) AS amendment_rank
+            FROM `CalAccess`.`CVR_REGISTRATION_CD`
+            WHERE FORM_TYPE = 'F604' AND ENTITY_CD = 'LBY'
+        ) AS ranked_records
+        WHERE amendment_rank = 1
+    """)).fetchall()
+    
 # get lobbyists
 
-# -- get registration for lobbyists
-# SELECT *
-# FROM (
-#     SELECT *,
-#            RANK() OVER (PARTITION BY FILING_ID ORDER BY AMEND_ID DESC) AS amendment_rank
-#     FROM `CalAccess`.`CVR_REGISTRATION_CD`
-#     WHERE FORM_TYPE = 'F604' AND ENTITY_CD = 'LBY'
-# ) AS ranked_records
-# WHERE amendment_rank = 1
 # FIRM_NAME is the employer/firm
+# SENDER_ID is filer id of employer/firm
 # FILING_ID, AMEND_ID is 604 form
+# FILER_ID is lobbyist's id
 
 # -- get the filer (ignore dupe with diff uid) to confirm match and no dupes
 # SELECT DISTINCT XREF_FILER_ID, FILER_ID, FILER_TYPE, STATUS, EFFECT_DT, NAML, NAMF,
