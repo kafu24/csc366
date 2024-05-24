@@ -30,34 +30,31 @@ def upgrade() -> None:
     )
 
     op.create_table(
-        "organization",
-        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("address", sa.VARCHAR(255))
-    )
-
-    op.create_table(
         "organization_name",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization._id"), primary_key=True, autoincrement=False),
+        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False),
         sa.Column("name", sa.VARCHAR(255), primary_key=True)
     )
 
     op.create_table(
         "organization_filer",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization._id"), primary_key=True, autoincrement=False),
+        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), autoincrement=False),
         sa.Column("filer_id", sa.VARCHAR(255), primary_key=True)
     )
 
     op.create_table(
         "person",
-        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=False),
+        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column("DDDBPid", sa.Integer, sa.ForeignKey("DDDB2016Aug.Person.pid"), autoincrement=False),
         sa.Column("first", sa.VARCHAR(255)),
         sa.Column("middle", sa.VARCHAR(255)),
-        sa.Column("last", sa.VARCHAR(255))
+        sa.Column("last", sa.VARCHAR(255)),
+        sa.Column("suffix", sa.VARCHAR(255)),
+        sa.Column("title", sa.VARCHAR(255))
     )
 
     op.create_table(
         "individual_filer",
-        sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
+        sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), autoincrement=False),
         sa.Column("filer_id", sa.VARCHAR(255))
     )
 
@@ -75,7 +72,7 @@ def upgrade() -> None:
 
     op.create_table(
         "lobbying_firm",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization._id"), primary_key=True, autoincrement=False)
+        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False)
     )
 
     op.create_table(
@@ -112,7 +109,7 @@ def upgrade() -> None:
 
     op.create_table(
         "lobbyist_employer",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization._id"), primary_key=True, autoincrement=False)
+        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False)
     )
 
     op.create_table(
@@ -177,7 +174,7 @@ def upgrade() -> None:
     op.create_table(
         "candidate",
         sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
-        sa.Column("office_id", sa.Integer , sa.ForeignKey("office._id"), primary_key=True, autoincrement=False),
+        sa.Column("office_id", sa.Integer , sa.ForeignKey("office._id"), autoincrement=False),
         sa.Column("party", ENUM("party1", "party2", "party3")),
     )
 
@@ -190,7 +187,7 @@ def upgrade() -> None:
 
     op.create_table(
         "committee",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization._id"), primary_key=True, autoincrement=False),
+        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False),
         sa.Column("410_filing_id", sa.Integer, primary_key=True, autoincrement=False),
         sa.Column("410_amendment_id", sa.Integer, primary_key=True, autoincrement=False)
     )
@@ -198,7 +195,7 @@ def upgrade() -> None:
     op.create_table(
         "controlled_committee",
         sa.Column("committee_id", sa.Integer, sa.ForeignKey("committee.organization_id"), primary_key=True, autoincrement=False),
-        sa.Column("candidate_id", sa.Integer, sa.ForeignKey("candidate.person_id"), primary_key=True, autoincrement=False)
+        sa.Column("candidate_id", sa.Integer, sa.ForeignKey("candidate.person_id"), autoincrement=False)
     )
 
     op.create_table(
@@ -222,29 +219,15 @@ def upgrade() -> None:
     )
 
     op.create_table(
-        "ballot_committee_position",
-        sa.Column("committee_id", sa.Integer, sa.ForeignKey("ballot_committee.committee_id"), primary_key=True, autoincrement=False),
-        sa.Column("ballot_number", sa.Integer, sa.ForeignKey("ballot.ballot_number"), primary_key=True, autoincrement=False),
-        sa.Column("position", sa.Boolean)
-    )
-
-    op.create_table(
-        "independent_committee_position",
-        sa.Column("committee_id", sa.Integer, sa.ForeignKey("independent_committee.committee_id"), primary_key=True, autoincrement=False),
+        "ballot_support",
+        sa.Column("committee_id", sa.Integer, sa.ForeignKey("committee.organization_id"), primary_key=True, autoincrement=False),
         sa.Column("candidate_id", sa.Integer, sa.ForeignKey("candidate.person_id"), primary_key=True, autoincrement=False),
         sa.Column("position", sa.Boolean)
     )
 
     op.create_table(
-        "general_committee_candidate_position",
-        sa.Column("committee_id", sa.Integer, sa.ForeignKey("general_committee.committee_id"), primary_key=True, autoincrement=False),
-        sa.Column("candidate_id", sa.Integer, sa.ForeignKey("candidate.person_id"), primary_key=True, autoincrement=False),
-        sa.Column("position", sa.Boolean)
-    )
-
-    op.create_table(
-        "general_committee_position",
-        sa.Column("committee_id", sa.Integer, sa.ForeignKey("general_committee.committee_id"), primary_key=True, autoincrement=False),
+        "candidate_support",
+        sa.Column("committee_id", sa.Integer, sa.ForeignKey("committee.organization_id"), primary_key=True, autoincrement=False),
         sa.Column("ballot_number", sa.Integer, sa.ForeignKey("ballot.ballot_number"), primary_key=True, autoincrement=False),
         sa.Column("position", sa.Boolean)
     )
@@ -253,7 +236,7 @@ def upgrade() -> None:
         "expenditure",
         sa.Column("460_filing_id", sa.Integer, primary_key=True, autoincrement=False),
         sa.Column("460_amendment_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("committee_id", sa.Integer, sa.ForeignKey("committee.organization_id"), primary_key=True, autoincrement=False),
+        sa.Column("committee_id", sa.Integer, sa.ForeignKey("committee.organization_id"), autoincrement=False),
         sa.Column("transaction_date", sa.Date),
         sa.Column("monetary_amount", sa.Integer),
         sa.Column("code", ENUM("code1", "code2", "code3")),
@@ -262,30 +245,26 @@ def upgrade() -> None:
     )
 
     op.create_table(
-        "organization_contribution",
+        "donor",
+        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), autoincrement=False),
+        sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), autoincrement=False),
+    )
+    op.create_table(
+        "contribution",
         sa.Column("460_filing_id", sa.Integer, primary_key=True, autoincrement=False),
         sa.Column("460_amendment_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization._id"), primary_key=True, autoincrement=False),
+        sa.Column("donor_id", sa.Integer, sa.ForeignKey("donor._id"), primary_key=True, autoincrement=False),
         sa.Column("committee_id", sa.Integer, sa.ForeignKey("committee.organization_id"), primary_key=True, autoincrement=False),
         sa.Column("amount", sa.Integer),
         sa.Column("classification", ENUM("major donor", "other"))
     )
 
     op.create_table(
-        "individual_contribution",
-        sa.Column("460_filing_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("460_amendment_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
-        sa.Column("committee_id", sa.Integer, sa.ForeignKey("committee.organization_id"), primary_key=True, autoincrement=False),
-        sa.Column("amount", sa.Integer),
-        sa.Column("classification", ENUM("major donors", "general public", "candidate"))
-    )
-
-    op.create_table(
-        "organization_ballot_expenditure",
+        "independent_expenditure_ballot",
         sa.Column("461_filing_id", sa.Integer, primary_key=True, autoincrement=False),
         sa.Column("461_amendment_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization._id"), primary_key=True, autoincrement=False),
+        sa.Column("donor_id", sa.Integer, sa.ForeignKey("donor._id"), primary_key=True, autoincrement=False),
         sa.Column("ballot_number", sa.Integer, sa.ForeignKey("ballot.ballot_number"), primary_key=True, autoincrement=False),
         sa.Column("transaction_date", sa.Date),
         sa.Column("monetary_amount", sa.Integer),
@@ -295,10 +274,10 @@ def upgrade() -> None:
     )
 
     op.create_table(
-        "organization_candidate_expenditure",
+        "independent_expenditure_candidate",
         sa.Column("461_filing_id", sa.Integer, primary_key=True, autoincrement=False),
         sa.Column("461_amendment_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("organization._id"), primary_key=True, autoincrement=False),
+        sa.Column("donor_id", sa.Integer, sa.ForeignKey("donor._id"), primary_key=True, autoincrement=False),
         sa.Column("candidate_id", sa.Integer, sa.ForeignKey("candidate.person_id"), primary_key=True, autoincrement=False),
         sa.Column("transaction_date", sa.Date),
         sa.Column("monetary_amount", sa.Integer),
@@ -306,47 +285,16 @@ def upgrade() -> None:
         sa.Column("description", sa.VARCHAR(255)),
         sa.Column("purpose", sa.VARCHAR(255))
     )
-
-    op.create_table(
-        "individual_ballot_expenditure",
-        sa.Column("461_filing_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("461_amendment_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
-        sa.Column("ballot_number", sa.Integer, sa.ForeignKey("ballot.ballot_number"), primary_key=True, autoincrement=False),
-        sa.Column("transaction_date", sa.Date),
-        sa.Column("monetary_amount", sa.Integer),
-        sa.Column("code", ENUM("code1", "code2", "code3")),
-        sa.Column("description", sa.VARCHAR(255)),
-        sa.Column("purpose", sa.VARCHAR(255))
-    )
-
-    op.create_table(
-        "individual_candidate_expenditure",
-        sa.Column("461_filing_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("461_amendment_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
-        sa.Column("candidate_id", sa.Integer, sa.ForeignKey("candidate.person_id"), primary_key=True, autoincrement=False),
-        sa.Column("transaction_date", sa.Date),
-        sa.Column("monetary_amount", sa.Integer),
-        sa.Column("code", ENUM("code1", "code2", "code3")),
-        sa.Column("description", sa.VARCHAR(255)),
-        sa.Column("purpose", sa.VARCHAR(255))
-    )
-
 
 
 def downgrade() -> None:
-    op.drop_table("individual_candidate_expenditure")
-    op.drop_table("individual_ballot_expenditure")
-    op.drop_table("organization_candidate_expenditure")
-    op.drop_table("organization_ballot_expenditure")
-    op.drop_table("individual_contribution")
-    op.drop_table("organization_contribution")
+    op.drop_table("independent_expenditure_candidate")
+    op.drop_table("independent_expenditure_ballot")
+    op.drop_table("contribution")
+    op.drop_table("donor")
     op.drop_table("expenditure")
-    op.drop_table("general_committee_position")
-    op.drop_table("general_committee_candidate_position")
-    op.drop_table("independent_committee_position")
-    op.drop_table("ballot_committee_position")
+    op.drop_table("candidate_support")
+    op.drop_table("ballot_support")
     op.drop_table("ballot")
     op.drop_table("general_committee")
     op.drop_table("independent_committee")
@@ -372,6 +320,4 @@ def downgrade() -> None:
     op.drop_table("person")
     op.drop_table("organization_filer")
     op.drop_table("organization_name")
-    op.drop_table("organization")
     op.drop_table("bill")
-
