@@ -32,8 +32,8 @@ def upgrade() -> None:
     op.create_table(
         "person",
         sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column("DDDBPid", sa.Integer, sa.ForeignKey("DDDB2016Aug.Person.pid")),
-        # sa.Column("DDDBPid", sa.Integer),
+        # sa.Column("DDDBPid", sa.Integer, sa.ForeignKey("DDDB2016Aug.Person.pid")),
+        sa.Column("DDDBPid", sa.Integer),
         sa.Column("first", sa.VARCHAR(255)),
         sa.Column("middle", sa.VARCHAR(255)),
         sa.Column("last", sa.VARCHAR(255)),
@@ -43,10 +43,10 @@ def upgrade() -> None:
 
     op.create_table(
         "filer",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid")),
-        # sa.Column("organization_id", sa.Integer),
+        # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid")),
+        sa.Column("organization_id", sa.Integer),
         sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), autoincrement=False),
-        sa.Column("filer_id", sa.VARCHAR(255), primary_key=True)
+        sa.Column("filer_id", sa.VARCHAR(255))
     )
 
     op.create_table(
@@ -57,8 +57,8 @@ def upgrade() -> None:
 
     op.create_table(
         "lobbying_firm",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False)
-        # sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False)
+        # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False)
+        sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False)
     )
 
     op.create_table(
@@ -95,8 +95,8 @@ def upgrade() -> None:
 
     op.create_table(
         "lobbyist_employer",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False)
-        # sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False)
+        # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False)
+        sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False)
     )
 
     op.create_table(
@@ -180,8 +180,8 @@ def upgrade() -> None:
 
     op.create_table(
         "committee",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False),
-        # sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False),
+        # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False),
+        sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False),
         sa.Column("410_filing_id", sa.Integer),
         sa.Column("410_amendment_id", sa.Integer)
     )
@@ -242,16 +242,16 @@ def upgrade() -> None:
     op.create_table(
         "donor",
         sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid")),
-        # sa.Column("organization_id", sa.Integer),
+        # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid")),
+        sa.Column("organization_id", sa.Integer),
         sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id")),
         sa.UniqueConstraint("person_id")
     )
 
     op.create_table(
         "sponsorship",
-        sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), autoincrement=False),
-        # sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False),
+        # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), autoincrement=False),
+        sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False),
         sa.Column("donor_id", sa.Integer, sa.ForeignKey("donor._id"), primary_key=True, autoincrement=False),
         sa.Column("transaction_date", sa.Date),
         sa.Column("monetary_amount", sa.Integer),
