@@ -52,7 +52,7 @@ def upgrade() -> None:
     op.create_table(
         "lobbyist",
         sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
-        sa.Column("completed_ethics_course", sa.Boolean)
+        sa.Column("completed_ethics_course", sa.DATETIME)
     )
 
     op.create_table(
