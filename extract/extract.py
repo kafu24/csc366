@@ -26,13 +26,14 @@ with db.engine.begin() as connection:
         SELECT *
         FROM ranked_records
         WHERE amendment_rank = 1
+                                                       LIMIT 10
     """)).fetchall()
     print(len(lobbyist_regs))
     for lobbyist_reg in lobbyist_regs:
         filer_id = lobbyist_reg.filer_id
-        first = lobbyist_reg.first.upper() if lobbyist_reg.first else None
+        first = lobbyist_reg.first.upper().strip() if lobbyist_reg.first else None
         middle = None
-        last = lobbyist_reg.last.upper() if lobbyist_reg.last else None
+        last = lobbyist_reg.last.upper().strip() if lobbyist_reg.last else None
         title = lobbyist_reg.title if lobbyist_reg.title else None
         suffix = lobbyist_reg.suffix if lobbyist_reg.suffix else None
         # fix for when they have their entire name in last field only
@@ -54,7 +55,7 @@ with db.engine.begin() as connection:
         current_ethics = None
         result = connection.execute(sqlalchemy.text("""
             SELECT p._id, p.first, p.middle, p.last, l.completed_ethics_course
-            FROM `PWDev`.`filer` f
+            FROM `PWDev`.`filer_id` f
             JOIN `PWDev`.`person` p ON f.person_id = p._id
             JOIN `PWDev`.`lobbyist` l ON l.person_id = p._id
             WHERE filer_id = :filer_id AND (first = :first OR first = :last)
@@ -73,9 +74,9 @@ with db.engine.begin() as connection:
                 WHERE CVR.filer_id = :filer_id AND CVR.filer_namf LIKE CONCAT('%', :first, '%')
             """), {"filer_id": filer_id, "first": first}).fetchall()
             for name_info in all_name_info:
-                first = name_info.first.upper() if name_info.first else None
+                first = name_info.first.upper().strip() if name_info.first else None
                 middle = None
-                last = name_info.last.upper() if name_info.last else None
+                last = name_info.last.upper().strip() if name_info.last else None
                 title = name_info.title if name_info.title else None
                 suffix = name_info.suffix if name_info.suffix else None
                 match = re.match(r'^(.*\S)\s+(\S+)$', first)
@@ -168,31 +169,30 @@ with db.engine.begin() as connection:
                 VALUES (:pid, :ethics)
             """), {"pid": lobbyist_id, "ethics": ethics})
             connection.execute(sqlalchemy.text("""
-                INSERT INTO `PWDev`.`filer` (person_id, filer_id)
+                INSERT INTO `PWDev`.`filer_id` (person_id, filer_id)
                 VALUES (:person_id, :filer_id)
             """), {"person_id": lobbyist_id, "filer_id": filer_id})
         else:
-            # TODO: resolve this
+            # TODO: resolve this, probably take most filled/latest
             if first != current_first or middle != current_middle or last != current_last:
-                print(first, middle, last)
-                print(current_first, current_middle, current_last)
+                print("conflicting name:", first, middle, last, current_first, current_middle, current_last)
             # update name info if necessary
             if first is not None and current_first is None:
-                print("updated name:", current_first, first)
+                # print("updated name:", current_first, first)
                 connection.execute(sqlalchemy.text("""
                     UPDATE `PWDev`.`person`
                     SET first = :first
                     WHERE _id = :pid
                 """), {"pid": person_id, "first": first})
             if middle is not None and current_middle is None:
-                print("updated name:", current_middle, middle)
+                # print("updated name:", current_middle, middle)
                 connection.execute(sqlalchemy.text("""
                     UPDATE `PWDev`.`person`
                     SET middle = :middle
                     WHERE _id = :pid
                 """), {"pid": person_id, "middle": middle})
             if last is not None and current_last is None:
-                print("updated name:", current_last, last)
+                # print("updated name:", current_last, last)
                 connection.execute(sqlalchemy.text("""
                     UPDATE `PWDev`.`person`
                     SET last = :last
@@ -287,39 +287,52 @@ with db.engine.begin() as connection:
             continue
         organization_reg = organization_regs[0]
         filer_id = organization_reg.filer_id
-        # check if it exists in DDDB, handle accordingly
-        try:
-            # exactly one match
-            organization_id = connection.execute(sqlalchemy.text("""
-                SELECT DISTINCT oid
-                FROM DDDB2016Aug.Organizations
-                WHERE name = :name
-            """), {"name": org_name}).scalar_one()
-        except MultipleResultsFound:
-            # multiple exact matches, more specific
+        # if already found
+        if added_orgs[filer_id]:
+            organization_id = added_orgs[filer_id]
+        else:
+            # check if it exists in DDDB, handle accordingly
             try:
+                # exactly one match
                 organization_id = connection.execute(sqlalchemy.text("""
                     SELECT DISTINCT oid
                     FROM DDDB2016Aug.Organizations
-                    WHERE name = :name AND (city = :city OR stateHeadquartered = :state)
-                """), {"name": org_name, "city": organization_reg.city, "state": organization_reg.state}).scalar_one()
-            except (NoResultFound, MultipleResultsFound):
-                # still multiple matches, or none, insert new record
-                # organization_id = connection.execute(sqlalchemy.text("""
-                #     INSERT INTO `DDDB2016Aug`.`Organizations` (name, city, stateHeadquartered)
-                #     VALUES (:name, :city, :state)
-                # """), {"name": org_name, "city": organization_reg.city, "state": organization_reg.state}).lastrowid
-                print("no org or mulitple orgs in dddb: ", org_name)
-                organization_id = 0
-        except NoResultFound:
-            # zero matches, insert new record
-            # TODO: not sure what other attributes to fill out
-            # organization_id = connection.execute(sqlalchemy.text("""
-            #     INSERT INTO `DDDB2016Aug`.`Organizations` (name, city, stateHeadquartered)
-            #     VALUES (:name, :city, :state)
-            # """), {"name": org_name, "city": organization_reg.city, "state": organization_reg.state}).lastrowid
-            print("no org in dddb: ", org_name)
-            organization_id = 0
+                    WHERE name = :name
+                """), {"name": org_name}).scalar_one()
+            except MultipleResultsFound:
+                # multiple exact matches, more specific
+                try:
+                    organization_id = connection.execute(sqlalchemy.text("""
+                        SELECT DISTINCT oid
+                        FROM DDDB2016Aug.Organizations
+                        WHERE name = :name AND (city = :city OR stateHeadquartered = :state)
+                    """), {"name": org_name, "city": organization_reg.city, "state": organization_reg.state}).scalar_one()
+                except (NoResultFound, MultipleResultsFound):
+                    # still multiple matches, or none, insert new record
+                    organization_id = connection.execute(sqlalchemy.text("""
+                        INSERT INTO `DDDB2016Aug`.`Organizations` (name, city, stateHeadquartered)
+                        VALUES (:name, :city, :state)
+                    """), {"name": org_name, "city": organization_reg.city, "state": organization_reg.state}).lastrowid
+                    print("no org or mulitple orgs in dddb: ", org_name)
+                    # organization_id = 0
+            except NoResultFound:
+                # zero matches, insert new record
+                # TODO: not sure what other attributes to fill out
+                organization_id = connection.execute(sqlalchemy.text("""
+                    INSERT INTO `DDDB2016Aug`.`Organizations` (name, city, stateHeadquartered)
+                    VALUES (:name, :city, :state)
+                """), {"name": org_name, "city": organization_reg.city, "state": organization_reg.state}).lastrowid
+                print("no org in dddb: ", org_name)
+                # organization_id = 0
+            # associate organization with filer id(s)
+            for organization_reg in organization_regs:
+                filer_id = organization_reg.filer_id
+                if not added_orgs[filer_id]:
+                    connection.execute(sqlalchemy.text("""
+                        INSERT INTO `PWDev`.`filer_id` (organization_id, filer_id)
+                        VALUES (:org_id, :filer_id)
+                    """), {"org_id": organization_id, "filer_id": filer_id})
+                    added_orgs[filer_id] = organization_id
         # check if it's a lobbying firm
         if organization_reg.form_type == 'F601' and organization_reg.entity_cd == 'FRM':
             # insert the organization as a lobbying firm
@@ -350,19 +363,15 @@ with db.engine.begin() as connection:
                   "604_fid": lobbyist_reg.filing_id, "604_aid": lobbyist_reg.amend_id, "ls": lobbyist_reg.ls})
         else:
             print("error: not a firm or employer", organization_reg)
-        # associate organization with filer id(s)
-        for organization_reg in organization_regs:
-            filer_id = organization_reg.filer_id
-            if not added_orgs[filer_id]:
-                connection.execute(sqlalchemy.text("""
-                    INSERT INTO `PWDev`.`filer` (organization_id, filer_id)
-                    VALUES (:org_id, :filer_id)
-                """), {"org_id": organization_id, "filer_id": filer_id})
-                added_orgs[filer_id] = True
+    
     with open("added_orgs", 'w') as json_file:
         json.dump(added_orgs, json_file, indent=4)
 
 
 
 # get the orgs that arent already recorded (those that have no lobbyists?)
-# select org reg where filerid not already in our db
+# select org reg where filerid not already in our db (or the json file)
+
+# select from lemp_cd for subcontracts and lobbying employment relations
+
+# select 

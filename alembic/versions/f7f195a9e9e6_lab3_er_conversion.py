@@ -42,7 +42,7 @@ def upgrade() -> None:
     )
 
     op.create_table(
-        "filer",
+        "filer_id",
         # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid")),
         sa.Column("organization_id", sa.Integer),
         sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), autoincrement=False),
