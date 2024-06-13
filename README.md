@@ -70,8 +70,20 @@ Files can be found in `/extract/`. Run them to extract the following information
   - **contract** for each contract between a lobbying firm and a lobbyist employer (one relation per quarter)
   - **activity** for each lobbying activity
   - **contract_lobbying** for each engagement of a lobbying activity as a result of a contract (one relation per quarter)
-- `3_lobbying.py`: Subcontracts between a subcontracting lobbying firm, subcontracted lobbying firm, and lobbyist employer, which includes all information relating to the organizations, along with the subcontract. Entities spending $5,000 or more to influence lobbying activities, which includes all information relating to the entity, along with information of the activity they want to influence. Fills tables:
-  - **Organizations** for each entity
-  - **filer_id** for each entity
-  - **activity** for each lobbying activity
-  - **individual_lobbying** for each attempt to influence of a lobbying activity by the entity
+- `3_lobbying.py`:
+
+1. Subcontracts between a subcontracting lobbying firm, subcontracted lobbying firm, and lobbyist employer, which includes all information relating to the organizations, along with the subcontract. Fills tables:
+
+   - **Organizations** for each organization
+   - **lobbying_firm** for each subcontracting and subcontracted lobbying firm
+   - **lobbyist_employer** for each lobbyist employer
+   - **filer_id** for each subcontracting lobbying firm
+   - **subcontract** for each subcontract between a subcontracting lobbying firm, a subcontracted lobbying firm, and a lobbyist employer (one relation per quarter)
+   - **activity** for each lobbying activity
+   - **subcontract_lobbying** for each engagement of a lobbying activity as a result of a subcontract (one relation per quarter)
+
+2. Entities spending $5,000 or more to influence lobbying activities, which includes all information relating to the entity, along with information of the activity they want to influence. Fills tables:
+   - **Organizations** for each entity
+   - **filer_id** for each entity
+   - **activity** for each lobbying activity
+   - **individual_lobbying** for each attempt to influence of a lobbying activity by the entity
