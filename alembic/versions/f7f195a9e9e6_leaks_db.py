@@ -20,147 +20,147 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.create_table(
-        "person",
-        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
-        # sa.Column("DDDBPid", sa.Integer, sa.ForeignKey("DDDB2016Aug.Person.pid")),
-        sa.Column("DDDBPid", sa.Integer),
-        sa.Column("first", sa.VARCHAR(45)),
-        sa.Column("middle", sa.VARCHAR(45)),
-        sa.Column("last", sa.VARCHAR(200)),
-        sa.Column("suffix", sa.VARCHAR(10)),
-        sa.Column("title", sa.VARCHAR(10))
-    )
+    # op.create_table(
+    #     "person",
+    #     sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
+    #     # sa.Column("DDDBPid", sa.Integer, sa.ForeignKey("DDDB2016Aug.Person.pid")),
+    #     sa.Column("DDDBPid", sa.Integer),
+    #     sa.Column("first", sa.VARCHAR(45)),
+    #     sa.Column("middle", sa.VARCHAR(45)),
+    #     sa.Column("last", sa.VARCHAR(200)),
+    #     sa.Column("suffix", sa.VARCHAR(10)),
+    #     sa.Column("title", sa.VARCHAR(10))
+    # )
 
-    op.create_table(
-        "filer_id",
-        # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid")),
-        sa.Column("organization_id", sa.Integer),
-        sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), autoincrement=False),
-        sa.Column("filer_id", sa.VARCHAR(9))
-    )
+    # op.create_table(
+    #     "filer_id",
+    #     # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid")),
+    #     sa.Column("organization_id", sa.Integer),
+    #     sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), autoincrement=False),
+    #     sa.Column("filer_id", sa.VARCHAR(9))
+    # )
 
-    op.create_table(
-        "activity",
-        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column("activity", sa.VARCHAR(400)),
-        sa.Column("filing_id", sa.Integer),
-        sa.Column("amendment_id", sa.Integer)
-    )
+    # op.create_table(
+    #     "activity",
+    #     sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
+    #     sa.Column("activity", sa.VARCHAR(400)),
+    #     sa.Column("filing_id", sa.Integer),
+    #     sa.Column("amendment_id", sa.Integer)
+    # )
 
-    op.create_table(
-        "lobbyist",
-        sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
-    )
+    # op.create_table(
+    #     "lobbyist",
+    #     sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
+    # )
 
-    op.create_table(
-        "lobbying_firm",
-        # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False)
-        sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False)
-    )
+    # op.create_table(
+    #     "lobbying_firm",
+    #     # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False)
+    #     sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False)
+    # )
     
-    op.create_table(
-        "permanent_employment",
-        sa.Column("lobbyist_id", sa.Integer, sa.ForeignKey("lobbyist.person_id"), primary_key=True, autoincrement=False),
-        sa.Column("lobbying_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id"), primary_key=True, autoincrement=False),
-        sa.Column("start", sa.Date, primary_key=True),
-        sa.Column("end", sa.Date),
-        sa.Column("legislative_session", YEAR),
-        sa.Column("ethics_completion", sa.Date)
-    )
+    # op.create_table(
+    #     "permanent_employment",
+    #     sa.Column("lobbyist_id", sa.Integer, sa.ForeignKey("lobbyist.person_id"), primary_key=True, autoincrement=False),
+    #     sa.Column("lobbying_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id"), primary_key=True, autoincrement=False),
+    #     sa.Column("start", sa.Date, primary_key=True),
+    #     sa.Column("end", sa.Date),
+    #     sa.Column("legislative_session", YEAR),
+    #     sa.Column("ethics_completion", sa.Date)
+    # )
 
-    op.create_table(
-        "lobbyist_employer",
-        # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False)
-        sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False)
-    )
+    # op.create_table(
+    #     "lobbyist_employer",
+    #     # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False)
+    #     sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False)
+    # )
 
-    op.create_table(
-        "direct_employment",
-        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column("lobbyist_id", sa.Integer, sa.ForeignKey("lobbyist.person_id"), nullable=False),
-        sa.Column("lobbyist_employer_id", sa.Integer, sa.ForeignKey("lobbyist_employer.organization_id"), nullable=False),
-        sa.Column("start", sa.Date, nullable=False),
-        sa.Column("end", sa.Date),
-        sa.Column("legislative_session", YEAR),
-        sa.Column("ethics_completion", sa.Date),
-        sa.UniqueConstraint("lobbyist_id", "lobbyist_employer_id", "start")
-    )
+    # op.create_table(
+    #     "direct_employment",
+    #     sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
+    #     sa.Column("lobbyist_id", sa.Integer, sa.ForeignKey("lobbyist.person_id"), nullable=False),
+    #     sa.Column("lobbyist_employer_id", sa.Integer, sa.ForeignKey("lobbyist_employer.organization_id"), nullable=False),
+    #     sa.Column("start", sa.Date, nullable=False),
+    #     sa.Column("end", sa.Date),
+    #     sa.Column("legislative_session", YEAR),
+    #     sa.Column("ethics_completion", sa.Date),
+    #     sa.UniqueConstraint("lobbyist_id", "lobbyist_employer_id", "start")
+    # )
 
-    op.create_table(
-        "employed_lobbying",
-        sa.Column("employed_id", sa.Integer, sa.ForeignKey("direct_employment._id"), primary_key=True, autoincrement=False),
-        # sa.Column("bill_id", sa.VARCHAR(23), sa.ForeignKey("DDDB2016Aug.Bill.bid"), primary_key=True, autoincrement=False),
-        sa.Column("activity_id", sa.Integer, sa.ForeignKey("activity._id"), primary_key=True, autoincrement=False)
-    )
+    # op.create_table(
+    #     "employed_lobbying",
+    #     sa.Column("employed_id", sa.Integer, sa.ForeignKey("direct_employment._id"), primary_key=True, autoincrement=False),
+    #     # sa.Column("bill_id", sa.VARCHAR(23), sa.ForeignKey("DDDB2016Aug.Bill.bid"), primary_key=True, autoincrement=False),
+    #     sa.Column("activity_id", sa.Integer, sa.ForeignKey("activity._id"), primary_key=True, autoincrement=False)
+    # )
 
-    op.create_table(
-        "contract",
-        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column("lobbying_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id"), nullable=False),
-        sa.Column("lobbyist_employer_id", sa.Integer, sa.ForeignKey("lobbyist_employer.organization_id"), nullable=False),
-        sa.Column("601_filing_id", sa.Integer),
-        sa.Column("601_amendment_id", sa.Integer),
-        sa.Column("filing_date", sa.Date, nullable=False),
-        sa.Column("effective_date", sa.Date, nullable=False),
-        sa.Column("period_of_contract", sa.VARCHAR(30)),
-        sa.Column("legislative_session", YEAR),
-        sa.UniqueConstraint("lobbying_firm_id", "lobbyist_employer_id", "filing_date", "effective_date")
-    )
+    # op.create_table(
+    #     "contract",
+    #     sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
+    #     sa.Column("lobbying_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id"), nullable=False),
+    #     sa.Column("lobbyist_employer_id", sa.Integer, sa.ForeignKey("lobbyist_employer.organization_id"), nullable=False),
+    #     sa.Column("601_filing_id", sa.Integer),
+    #     sa.Column("601_amendment_id", sa.Integer),
+    #     sa.Column("filing_date", sa.Date, nullable=False),
+    #     sa.Column("effective_date", sa.Date, nullable=False),
+    #     sa.Column("period_of_contract", sa.VARCHAR(30)),
+    #     sa.Column("legislative_session", YEAR),
+    #     sa.UniqueConstraint("lobbying_firm_id", "lobbyist_employer_id", "filing_date", "effective_date")
+    # )
 
-    op.create_table(
-        "contracted_lobbying",
-        sa.Column("contract_id", sa.Integer, sa.ForeignKey("contract._id"), primary_key=True, autoincrement=False),
-        # sa.Column("bill_id", sa.VARCHAR(23), sa.ForeignKeWy("DDDB2016Aug.Bill.bid"), primary_key=True, autoincrement=False),
-        sa.Column("activity_id", sa.Integer, sa.ForeignKey("activity._id"), primary_key=True, autoincrement=False),
-    )
+    # op.create_table(
+    #     "contracted_lobbying",
+    #     sa.Column("contract_id", sa.Integer, sa.ForeignKey("contract._id"), primary_key=True, autoincrement=False),
+    #     # sa.Column("bill_id", sa.VARCHAR(23), sa.ForeignKeWy("DDDB2016Aug.Bill.bid"), primary_key=True, autoincrement=False),
+    #     sa.Column("activity_id", sa.Integer, sa.ForeignKey("activity._id"), primary_key=True, autoincrement=False),
+    # )
     
-    op.create_table(
-        "subcontract",
-        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column("subcontracting_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id"), nullable=False),
-        sa.Column("subcontracted_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id"), nullable=False),
-        sa.Column("employer_id", sa.Integer, sa.ForeignKey("lobbyist_employer.organization_id"), nullable=False),
-        sa.Column("601_filing_id", sa.Integer),
-        sa.Column("601_amendment_id", sa.Integer),
-        sa.Column("filing_date", sa.Date, nullable=False),
-        sa.Column("effective_date", sa.Date, nullable=False),
-        sa.Column("period_of_contract", sa.VARCHAR(30)),
-        sa.Column("legislative_session", YEAR),
-        sa.UniqueConstraint("subcontracting_firm_id", "subcontracted_firm_id", "employer_id", "filing_date", "effective_date")
-    )
+    # op.create_table(
+    #     "subcontract",
+    #     sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
+    #     sa.Column("subcontracting_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id"), nullable=False),
+    #     sa.Column("subcontracted_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id"), nullable=False),
+    #     sa.Column("employer_id", sa.Integer, sa.ForeignKey("lobbyist_employer.organization_id"), nullable=False),
+    #     sa.Column("601_filing_id", sa.Integer),
+    #     sa.Column("601_amendment_id", sa.Integer),
+    #     sa.Column("filing_date", sa.Date, nullable=False),
+    #     sa.Column("effective_date", sa.Date, nullable=False),
+    #     sa.Column("period_of_contract", sa.VARCHAR(30)),
+    #     sa.Column("legislative_session", YEAR),
+    #     sa.UniqueConstraint("subcontracting_firm_id", "subcontracted_firm_id", "employer_id", "filing_date", "effective_date")
+    # )
 
-    op.create_table(
-        "subcontracted_lobbying",
-        sa.Column("subcontract_id", sa.Integer, sa.ForeignKey("subcontract._id"), primary_key=True, autoincrement=False),
-        # sa.Column("bill_id", sa.VARCHAR(23), sa.ForeignKey("DDDB2016Aug.Bill.bid"), primary_key=True, autoincrement=False),
-        sa.Column("activity_id", sa.Integer, sa.ForeignKey("activity._id"), primary_key=True, autoincrement=False),
-    )
+    # op.create_table(
+    #     "subcontracted_lobbying",
+    #     sa.Column("subcontract_id", sa.Integer, sa.ForeignKey("subcontract._id"), primary_key=True, autoincrement=False),
+    #     # sa.Column("bill_id", sa.VARCHAR(23), sa.ForeignKey("DDDB2016Aug.Bill.bid"), primary_key=True, autoincrement=False),
+    #     sa.Column("activity_id", sa.Integer, sa.ForeignKey("activity._id"), primary_key=True, autoincrement=False),
+    # )
 
-    op.create_table(
-        "individual_lobbying",
-        # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False),
-        sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False),
-        # sa.Column("bill_id", sa.VARCHAR(23), sa.ForeignKey("DDDB2016Aug.Bill.bid"), primary_key=True, autoincrement=False),
-        sa.Column("activity_id", sa.Integer, sa.ForeignKey("activity._id"), primary_key=True, autoincrement=False),
-        sa.Column("filing_date", sa.Date),
-        sa.Column("legislative_session", YEAR),
-    )
+    # op.create_table(
+    #     "individual_lobbying",
+    #     # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False),
+    #     sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False),
+    #     # sa.Column("bill_id", sa.VARCHAR(23), sa.ForeignKey("DDDB2016Aug.Bill.bid"), primary_key=True, autoincrement=False),
+    #     sa.Column("activity_id", sa.Integer, sa.ForeignKey("activity._id"), primary_key=True, autoincrement=False),
+    #     sa.Column("filing_date", sa.Date),
+    #     sa.Column("legislative_session", YEAR),
+    # )
 
     op.create_table(
         "district",
         sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
         sa.Column("chamber", sa.VARCHAR(50), nullable=False),
-        sa.Column("number", sa.Integer, nullable=False),
+        sa.Column("number", sa.VARCHAR(4), nullable=False),
         sa.UniqueConstraint("chamber", "number")
     )
 
     op.create_table(
         "office",
         sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column("title", sa.Integer),
-        sa.Column("agency", sa.Integer),
-        sa.Column("jurisdiction", ENUM("N/A", "LOCAL", "STATE", "COUNTY", "MULTI-COUNTY", "CITY", "SUPERIOR COURT JUDGE")),
+        sa.Column("title", sa.VARCHAR(80)),
+        sa.Column("agency", sa.VARCHAR(200)),
+        sa.Column("jurisdiction", sa.VARCHAR(30)),
         sa.Column("district_id", sa.Integer, sa.ForeignKey("district._id")),
         sa.UniqueConstraint("title", "agency", "jurisdiction")
     )
@@ -169,14 +169,21 @@ def upgrade() -> None:
         "election",
         sa.Column("office_id", sa.Integer , sa.ForeignKey("office._id"), primary_key=True, autoincrement=False),
         sa.Column("type", ENUM("N/A", "GENERAL", "PRIMARY", "RECALL", "SPECIAL ELECTION", "OFFICEHOLDER", "SPECIAL RUNOFF", "UNKNOWN")),
-        sa.Column("date", sa.DATE, primary_key=True)
+        sa.Column("year", YEAR, primary_key=True)
     )
 
     op.create_table(
         "candidate",
         sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
-        sa.Column("office_id", sa.Integer , sa.ForeignKey("office._id"), autoincrement=False),
         sa.Column("party", ENUM("N/A", "DEMOCRATIC", "REPUBLICAN", "GREEN PARTY", "REFORM PARTY", "AMERICAN INDEPENDENT PARTY", "PEACE AND FREEDOM", "INDEPENDENT", "LIBERTARIAN", "NON PARTISAN", "NATURAL LAW", "UNKNOWN", "NO PARTY PREFERENCE", "AMERICANS ELECT", "UNKNOWN", "PEACE AND FREEDOM"))
+    )
+
+    op.create_table(
+        "running",
+        sa.Column("candidate_id", sa.Integer, sa.ForeignKey("candidate.person_id"), primary_key=True, autoincrement=False),
+        sa.Column("office_id", sa.Integer , sa.ForeignKey("office._id"), primary_key=True, autoincrement=False),
+        sa.Column("501_filing_id", sa.Integer),
+        sa.Column("501_amendment_id", sa.Integer)
     )
 
     op.create_table(
@@ -319,21 +326,22 @@ def downgrade() -> None:
     op.drop_table("controlled_committee")
     op.drop_table("committee")
     op.drop_table("lawmaker")
+    op.drop_table("running")
     op.drop_table("candidate")
     op.drop_table("election")
     op.drop_table("office")
     op.drop_table("district")
-    op.drop_table("individual_lobbying")
-    op.drop_table("subcontracted_lobbying")
-    op.drop_table("subcontract")
-    op.drop_table("contracted_lobbying")
-    op.drop_table("contract")
-    op.drop_table("employed_lobbying")
-    op.drop_table("direct_employment")
-    op.drop_table("lobbyist_employer")
-    op.drop_table("permanent_employment")
-    op.drop_table("lobbying_firm")
-    op.drop_table("lobbyist")
-    op.drop_table("activity")
-    op.drop_table("filer_id")
-    op.drop_table("person")
+    # op.drop_table("individual_lobbying")
+    # op.drop_table("subcontracted_lobbying")
+    # op.drop_table("subcontract")
+    # op.drop_table("contracted_lobbying")
+    # op.drop_table("contract")
+    # op.drop_table("employed_lobbying")
+    # op.drop_table("direct_employment")
+    # op.drop_table("lobbyist_employer")
+    # op.drop_table("permanent_employment")
+    # op.drop_table("lobbying_firm")
+    # op.drop_table("lobbyist")
+    # op.drop_table("activity")
+    # op.drop_table("filer_id")
+    # op.drop_table("person")
