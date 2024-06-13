@@ -149,32 +149,34 @@ def upgrade() -> None:
 
     op.create_table(
         "district",
-        sa.Column("chamber", ENUM("Senate", "Assembly"), primary_key=True),
-        sa.Column("number", sa.Integer, primary_key=True, autoincrement=False),
+        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column("chamber", sa.VARCHAR(50), nullable=False),
+        sa.Column("number", sa.Integer, nullable=False),
+        sa.UniqueConstraint("chamber", "number")
     )
 
     op.create_table(
         "office",
-        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("district_chamber", ENUM("Senate", "Assembly")),
-        sa.Column("district_number", sa.Integer),
-        sa.Column("type", ENUM("executive", "legislative", "municipal", "judicial")),
-        sa.ForeignKeyConstraint(["district_chamber", "district_number"],
-                                ["district.chamber", "district.number"])
+        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column("title", sa.Integer),
+        sa.Column("agency", sa.Integer),
+        sa.Column("jurisdiction", ENUM("N/A", "LOCAL", "STATE", "COUNTY", "MULTI-COUNTY", "CITY", "SUPERIOR COURT JUDGE")),
+        sa.Column("district_id", sa.Integer, sa.ForeignKey("district._id")),
+        sa.UniqueConstraint("title", "agency", "jurisdiction")
     )
 
     op.create_table(
         "election",
         sa.Column("office_id", sa.Integer , sa.ForeignKey("office._id"), primary_key=True, autoincrement=False),
-        sa.Column("election_type", ENUM("primary", "general", "recall", "special", "runoff")),
-        sa.Column("date", sa.Date)
+        sa.Column("type", ENUM("N/A", "GENERAL", "PRIMARY", "RECALL", "SPECIAL ELECTION", "OFFICEHOLDER", "SPECIAL RUNOFF", "UNKNOWN")),
+        sa.Column("date", sa.DATE, primary_key=True)
     )
 
     op.create_table(
         "candidate",
         sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
         sa.Column("office_id", sa.Integer , sa.ForeignKey("office._id"), autoincrement=False),
-        sa.Column("party", sa.VARCHAR(20))
+        sa.Column("party", ENUM("N/A", "DEMOCRATIC", "REPUBLICAN", "GREEN PARTY", "REFORM PARTY", "AMERICAN INDEPENDENT PARTY", "PEACE AND FREEDOM", "INDEPENDENT", "LIBERTARIAN", "NON PARTISAN", "NATURAL LAW", "UNKNOWN", "NO PARTY PREFERENCE", "AMERICANS ELECT", "UNKNOWN", "PEACE AND FREEDOM"))
     )
 
     op.create_table(
