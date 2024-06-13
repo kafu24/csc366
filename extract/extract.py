@@ -26,7 +26,7 @@ with db.engine.begin() as connection:
         SELECT *
         FROM ranked_records
         WHERE amendment_rank = 1
-                                                       LIMIT 10
+        LIMIT 10
     """)).fetchall()
     print(len(lobbyist_regs))
     for lobbyist_reg in lobbyist_regs:
@@ -375,3 +375,4 @@ with db.engine.begin() as connection:
 # select from lemp_cd for subcontracts and lobbying employment relations
 
 # select 
+
