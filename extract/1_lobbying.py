@@ -10,7 +10,7 @@ added_orgs = defaultdict(str)
 with db.engine.begin() as connection:
     # get the lobbyists and what orgs they've been employed by from calaccess
     # * one every 2 months for each employment relation
-    # * TODO: some of the lobbyist reported org names and or start dates are wrong (7946/73485),
+    # * TODO: some of the lobbyist reported org names and or start dates are wrong,
     #     so a match won't be found can probably go the other way from org -> lobbyist as well to
     #     double check, but will run into same problem with lobbyist names
     # * TODO: some lobbyists have same filer_id and first name, can match on more info,
@@ -281,13 +281,12 @@ with db.engine.begin() as connection:
             added_orgs[(org_name, filer_id, type)] = organization_id
         # check if it's a lobbying firm
         if form_type == 'F625' and type == 'FRM':
-            if employed_id is None:
-                # insert the permanent employment relation
-                connection.execute(sqlalchemy.text("""
-                    INSERT IGNORE INTO PWDev.permanent_employment (lobbyist_id, lobbying_firm_id, ethics_completion,
-                        start, end, legislative_session)
-                    VALUES (:lobbyist_id, :firm_id, :ethics, :start, :end, :ls)
-                """), {"lobbyist_id": lobbyist_id, "firm_id": organization_id, "ethics": ethics, "start": start, "end": end, "ls": ls})
+            # insert the permanent employment relation
+            connection.execute(sqlalchemy.text("""
+                INSERT IGNORE INTO PWDev.permanent_employment (lobbyist_id, lobbying_firm_id, ethics_completion,
+                    start, end, legislative_session)
+                VALUES (:lobbyist_id, :firm_id, :ethics, :start, :end, :ls)
+            """), {"lobbyist_id": lobbyist_id, "firm_id": organization_id, "ethics": ethics, "start": start, "end": end, "ls": ls})
         # check if it's a lobbyist employer
         elif form_type == 'F635' and type in ['LEM', 'LCO']:
             # check if employment is already accounted for
@@ -338,14 +337,13 @@ with db.engine.begin() as connection:
             """), {"filing_id": filing_id}).scalar_one_or_none()
             if activity_id is None:
                 activity_id = connection.execute(sqlalchemy.text("""
-                    INSERT INTO PWDev.activity (activity,  filing_id, amendment_id)
+                    INSERT INTO PWDev.activity (activity, filing_id, amendment_id)
                     VALUES (:activity, :filing_id, :amend_id)
                 """), {"activity": activity, "filing_id": filing_id, "amend_id": amend_id}).lastrowid
             connection.execute(sqlalchemy.text("""
                 INSERT IGNORE INTO PWDev.employed_lobbying (employed_id, activity_id)
                 VALUES (:employed_id, :activity_id)
             """), {"employed_id": employed_id, "activity_id": activity_id})
-
 added_orgs = {str(key): value for key, value in added_orgs.items()}
 with open("lobbying_orgs.json", "w") as file:
     json.dump(added_orgs, file)
