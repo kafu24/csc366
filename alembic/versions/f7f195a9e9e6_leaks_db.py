@@ -38,7 +38,6 @@ def upgrade() -> None:
         sa.Column("organization_id", sa.Integer),
         sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), autoincrement=False),
         sa.Column("filer_id", sa.VARCHAR(9))
-<<<<<<< HEAD:alembic/versions/f7f195a9e9e6_leaks_db.py
     )
 
     op.create_table(
@@ -47,8 +46,6 @@ def upgrade() -> None:
         sa.Column("activity", sa.VARCHAR(400)),
         sa.Column("filing_id", sa.Integer),
         sa.Column("amendment_id", sa.Integer)
-=======
->>>>>>> committee:alembic/versions/f7f195a9e9e6_lab3_er_conversion.py
     )
 
     op.create_table(
@@ -60,14 +57,6 @@ def upgrade() -> None:
         "lobbying_firm",
         # sa.Column("organization_id", sa.Integer, sa.ForeignKey("DDDB2016Aug.Organizations.oid"), primary_key=True, autoincrement=False)
         sa.Column("organization_id", sa.Integer, primary_key=True, autoincrement=False)
-    )
-    
-    op.create_table(
-        "activity",
-        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column("activity", sa.VARCHAR(400)),
-        sa.Column("filing_id", sa.Integer),
-        sa.Column("amendment_id", sa.Integer)
     )
     
     op.create_table(
@@ -112,13 +101,8 @@ def upgrade() -> None:
         sa.Column("lobbyist_employer_id", sa.Integer, sa.ForeignKey("lobbyist_employer.organization_id"), nullable=False),
         sa.Column("601_filing_id", sa.Integer),
         sa.Column("601_amendment_id", sa.Integer),
-<<<<<<< HEAD:alembic/versions/f7f195a9e9e6_leaks_db.py
         sa.Column("filing_date", sa.Date, nullable=False),
         sa.Column("effective_date", sa.Date, nullable=False),
-=======
-        sa.Column("filing_date", sa.Date),
-        sa.Column("effective_date", sa.Date),
->>>>>>> committee:alembic/versions/f7f195a9e9e6_lab3_er_conversion.py
         sa.Column("period_of_contract", sa.VARCHAR(30)),
         sa.Column("legislative_session", YEAR),
         sa.UniqueConstraint("lobbying_firm_id", "lobbyist_employer_id", "filing_date", "effective_date")
@@ -134,7 +118,6 @@ def upgrade() -> None:
     op.create_table(
         "subcontract",
         sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
-<<<<<<< HEAD:alembic/versions/f7f195a9e9e6_leaks_db.py
         sa.Column("subcontracting_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id"), nullable=False),
         sa.Column("subcontracted_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id"), nullable=False),
         sa.Column("employer_id", sa.Integer, sa.ForeignKey("lobbyist_employer.organization_id"), nullable=False),
@@ -145,16 +128,6 @@ def upgrade() -> None:
         sa.Column("period_of_contract", sa.VARCHAR(30)),
         sa.Column("legislative_session", YEAR),
         sa.UniqueConstraint("subcontracting_firm_id", "subcontracted_firm_id", "employer_id", "filing_date", "effective_date")
-=======
-        sa.Column("subcontracting_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id")),
-        sa.Column("subcontracted_firm_id", sa.Integer, sa.ForeignKey("lobbying_firm.organization_id")),
-        sa.Column("601_filing_id", sa.Integer),
-        sa.Column("601_amendment_id", sa.Integer),
-        sa.Column("effective_date", sa.Date),
-        sa.Column("period_of_contract", sa.VARCHAR(30)),
-        sa.Column("legislative_session", YEAR),
-        sa.UniqueConstraint("601_filing_id", "subcontracting_firm_id", "subcontracted_firm_id")
->>>>>>> committee:alembic/versions/f7f195a9e9e6_lab3_er_conversion.py
     )
 
     op.create_table(
@@ -162,7 +135,6 @@ def upgrade() -> None:
         sa.Column("subcontract_id", sa.Integer, sa.ForeignKey("subcontract._id"), primary_key=True, autoincrement=False),
         # sa.Column("bill_id", sa.VARCHAR(23), sa.ForeignKey("DDDB2016Aug.Bill.bid"), primary_key=True, autoincrement=False),
         sa.Column("activity_id", sa.Integer, sa.ForeignKey("activity._id"), primary_key=True, autoincrement=False),
-<<<<<<< HEAD:alembic/versions/f7f195a9e9e6_leaks_db.py
     )
 
     op.create_table(
@@ -173,40 +145,45 @@ def upgrade() -> None:
         sa.Column("activity_id", sa.Integer, sa.ForeignKey("activity._id"), primary_key=True, autoincrement=False),
         sa.Column("filing_date", sa.Date),
         sa.Column("legislative_session", YEAR),
-=======
-        sa.Column("625_filing_id", sa.Integer),
-        sa.Column("625_amendment_id", sa.Integer)
->>>>>>> committee:alembic/versions/f7f195a9e9e6_lab3_er_conversion.py
     )
 
     op.create_table(
         "district",
-        sa.Column("chamber", ENUM("Senate", "Assembly"), primary_key=True),
-        sa.Column("number", sa.Integer, primary_key=True, autoincrement=False),
+        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column("chamber", sa.VARCHAR(50), nullable=False),
+        sa.Column("number", sa.VARCHAR(4), nullable=False),
+        sa.UniqueConstraint("chamber", "number")
     )
 
     op.create_table(
         "office",
-        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("district_chamber", ENUM("Senate", "Assembly")),
-        sa.Column("district_number", sa.Integer),
-        sa.Column("type", ENUM("executive", "legislative", "municipal", "judicial")),
-        sa.ForeignKeyConstraint(["district_chamber", "district_number"],
-                                ["district.chamber", "district.number"])
+        sa.Column("_id", sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column("title", sa.VARCHAR(80)),
+        sa.Column("agency", sa.VARCHAR(200)),
+        sa.Column("jurisdiction", sa.VARCHAR(30)),
+        sa.Column("district_id", sa.Integer, sa.ForeignKey("district._id")),
+        sa.UniqueConstraint("title", "agency", "jurisdiction")
     )
 
     op.create_table(
         "election",
         sa.Column("office_id", sa.Integer , sa.ForeignKey("office._id"), primary_key=True, autoincrement=False),
-        sa.Column("election_type", ENUM("primary", "general", "recall", "special", "runoff")),
-        sa.Column("date", sa.Date)
+        sa.Column("type", ENUM("N/A", "GENERAL", "PRIMARY", "RECALL", "SPECIAL ELECTION", "OFFICEHOLDER", "SPECIAL RUNOFF", "UNKNOWN")),
+        sa.Column("year", YEAR, primary_key=True)
     )
 
     op.create_table(
         "candidate",
         sa.Column("person_id", sa.Integer, sa.ForeignKey("person._id"), primary_key=True, autoincrement=False),
-        sa.Column("office_id", sa.Integer , sa.ForeignKey("office._id"), autoincrement=False),
-        sa.Column("party", sa.VARCHAR(20))
+        sa.Column("party", ENUM("N/A", "DEMOCRATIC", "REPUBLICAN", "GREEN PARTY", "REFORM PARTY", "AMERICAN INDEPENDENT PARTY", "PEACE AND FREEDOM", "INDEPENDENT", "LIBERTARIAN", "NON PARTISAN", "NATURAL LAW", "UNKNOWN", "NO PARTY PREFERENCE", "AMERICANS ELECT", "UNKNOWN", "PEACE AND FREEDOM"))
+    )
+
+    op.create_table(
+        "running",
+        sa.Column("candidate_id", sa.Integer, sa.ForeignKey("candidate.person_id"), primary_key=True, autoincrement=False),
+        sa.Column("office_id", sa.Integer , sa.ForeignKey("office._id"), primary_key=True, autoincrement=False),
+        sa.Column("501_filing_id", sa.Integer),
+        sa.Column("501_amendment_id", sa.Integer)
     )
 
     op.create_table(
@@ -349,6 +326,7 @@ def downgrade() -> None:
     op.drop_table("controlled_committee")
     op.drop_table("committee")
     op.drop_table("lawmaker")
+    op.drop_table("running")
     op.drop_table("candidate")
     op.drop_table("election")
     op.drop_table("office")
@@ -362,14 +340,8 @@ def downgrade() -> None:
     op.drop_table("direct_employment")
     op.drop_table("lobbyist_employer")
     op.drop_table("permanent_employment")
-    op.drop_table("activity")
     op.drop_table("lobbying_firm")
     op.drop_table("lobbyist")
-<<<<<<< HEAD:alembic/versions/f7f195a9e9e6_leaks_db.py
     op.drop_table("activity")
     op.drop_table("filer_id")
     op.drop_table("person")
-=======
-    op.drop_table("filer_id")
-    op.drop_table("person")
->>>>>>> committee:alembic/versions/f7f195a9e9e6_lab3_er_conversion.py
