@@ -294,7 +294,6 @@ with db.engine.begin() as connection:
         SELECT *
         FROM ranked_intentions ri
         WHERE ri.amendment_rank = 1
-                                                    LIMIT 100
     """)).fetchall()
     for cand in candidates:
         # get information to fill district, office, and election
@@ -302,19 +301,31 @@ with db.engine.begin() as connection:
         office_cd = cand.office_cd if cand.office_cd else None
         # fix for if they don't fill office, but fill out type
         if office is None:
-            office = office_codes[office]
-        agency = cand.agency if cand.agency else None
+            try:
+                office = office_codes[office]
+            except:
+                office = "N/A"
+        agency = cand.agency if cand.agency else "N/A"
         jurisdiction = cand.jurisdiction if cand.jurisdiction else None
         juris_cd = cand.juris_cd if cand.juris_cd else None
         if jurisdiction is None:
-            jurisdiction = jurisdiction_codes[jurisdiction]
+            try:
+                jurisdiction = jurisdiction_codes[jurisdiction]
+            except:
+                jurisdiction = "N/A"
         election_year = cand.election_year if cand.election_year else None
         election_type = cand.election_type if cand.election_type else None
-        election_type = election_codes[election_type]
+        try:
+            election_type = election_codes[election_type]
+        except:
+            election_type = "N/A"
         district_num = cand.district_num if cand.district_num else None
         district_cd = cand.district_cd if cand.district_cd else None
         if district_num is None:
-            district_num = district_codes[district_cd]
+            try:
+                district_num = district_codes[district_cd]
+            except:
+                district_num = "N/A"
         office_id = None
         district_id = None
         # insert district
@@ -515,11 +526,11 @@ with db.engine.begin() as connection:
                 connection.execute(sqlalchemy.text("""
                     INSERT IGNORE INTO PWProd.candidate (person_id, party)
                     VALUES (:pid, :party)
-                """), {"pid": candidate_id, "party": party})
+                """), {"pid": person_id, "party": party})
         filing_id = cand.filing_id if cand.filing_id else None
         amend_id = cand.amend_id if cand.amend_id else None
         # insert the running relation
         connection.execute(sqlalchemy.text("""
-            INSERT IGNORE INTO PWProd.running (candidate_id, office_id, 501_filing_id, 501_amendment_id)
-            VALUES (:candidate_id, :office_id, :filing_id, :amend_id)
-        """), {"candidate_id": candidate_id, "office_id": office_id, "filing_id": filing_id, "amend_id": amend_id})
+            INSERT IGNORE INTO PWProd.running (candidate_id, election_office_id, election_type, election_year, 501_filing_id, 501_amendment_id)
+            VALUES (:candidate_id, :office_id, :election_type, :election_year, :filing_id, :amend_id)
+        """), {"candidate_id": person_id, "office_id": office_id, "election_type": election_type, "election_year": election_year, "filing_id": filing_id, "amend_id": amend_id})
