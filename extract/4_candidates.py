@@ -294,6 +294,7 @@ with db.engine.begin() as connection:
         SELECT *
         FROM ranked_intentions ri
         WHERE ri.amendment_rank = 1
+                                                    LIMIT 100
     """)).fetchall()
     for cand in candidates:
         # get information to fill district, office, and election
@@ -475,7 +476,7 @@ with db.engine.begin() as connection:
                 """), {"first": first, "middle": middle, "last": last, "title": title, "suffix": suffix}).lastrowid
             # classify as candidate and associate with filer id
             connection.execute(sqlalchemy.text("""
-                INSERT INTO PWProd.candidate (person_id, party)
+                INSERT IGNORE INTO PWProd.candidate (person_id, party)
                 VALUES (:pid, :party)
             """), {"pid": candidate_id, "party": party})
             if filer_id != "":
@@ -512,7 +513,7 @@ with db.engine.begin() as connection:
             # if they filed with another party
             if party not in current_parties:
                 connection.execute(sqlalchemy.text("""
-                    INSERT INTO PWProd.candidate (person_id, party)
+                    INSERT IGNORE INTO PWProd.candidate (person_id, party)
                     VALUES (:pid, :party)
                 """), {"pid": candidate_id, "party": party})
         filing_id = cand.filing_id if cand.filing_id else None
