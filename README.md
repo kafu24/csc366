@@ -88,7 +88,7 @@ Files can be found in `/extract/`. Run them to extract the following information
    - **activity** for each lobbying activity
    - **individual_lobbying** for each attempt to influence of a lobbying activity by the entity
 
-- `4_lobbying.py`: Candidate intention, along with information about the election they are running in, for what office they are running for, and which district that office presides over (if applicable). Fills tables:
+- `4_candidates.py`: Candidate intention, along with information about the election they are running in, for what office they are running for, and which district that office presides over (if applicable). Fills tables:
   - **office**
   - **district** for each office being sought (populated for Senate, Assembly, or Board of Equalization)
   - **election** for each type and office being sought
