@@ -225,14 +225,16 @@ def upgrade() -> None:
 
     op.create_table(
         "ballot",
-        sa.Column("ballot_number", sa.Integer, primary_key=True, autoincrement=False),
-        sa.Column("legislative_session", YEAR, primary_key=True)
+        sa.Column("ballot_number", sa.VARCHAR(4), primary_key=True, autoincrement=False),
+        sa.Column("legislative_session", YEAR, primary_key=True),
+        sa.Column("name", sa.VARCHAR(200)),
+        sa.Column("jurisdiction", sa.VARCHAR(40))
     )
 
     op.create_table(
         "ballot_support",
         sa.Column("committee_id", sa.Integer, sa.ForeignKey("committee.organization_id"), primary_key=True, autoincrement=False),
-        sa.Column("ballot_number", sa.Integer, primary_key=True, autoincrement=False),
+        sa.Column("ballot_number", sa.VARCHAR(4), primary_key=True, autoincrement=False),
         sa.Column("legislative_session", YEAR, primary_key=True, autoincrement=False),
         sa.Column("position", sa.Boolean),
         sa.ForeignKeyConstraint(["ballot_number", "legislative_session"], ["ballot.ballot_number", "ballot.legislative_session"])
@@ -295,7 +297,7 @@ def upgrade() -> None:
         sa.Column("461_filing_id", sa.Integer, primary_key=True, autoincrement=False),
         sa.Column("461_amendment_id", sa.Integer),
         sa.Column("donor_id", sa.Integer, sa.ForeignKey("donor._id")),
-        sa.Column("ballot_number", sa.Integer),
+        sa.Column("ballot_number", sa.VARCHAR(4)),
         sa.Column("legislative_session", YEAR),
         sa.Column("transaction_date", sa.Date),
         sa.Column("monetary_amount", sa.Integer),

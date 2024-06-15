@@ -332,45 +332,45 @@ with db.engine.begin() as connection:
         if district_num not in ["N/A", "Unknown"] and office in ['ASSEMBLY', 'STATE SENATE', 'MEMBER BOARD OF EQUALIZATION']:
             district_id = connection.execute(sqlalchemy.text("""
                 SELECT _id
-                FROM PWProd.district 
+                FROM PWDev.district 
                 WHERE chamber = :office AND number = :district_num
             """), {"office": office, "district_num": district_num}).scalar_one_or_none()
             if district_id is None:
                 district_id = connection.execute(sqlalchemy.text("""
-                    INSERT INTO PWProd.district (chamber, number)
+                    INSERT INTO PWDev.district (chamber, number)
                     VALUES (:office, :district_num)
                 """), {"office": office, "district_num": district_num}).lastrowid
             # insert office with district
             office_id = connection.execute(sqlalchemy.text("""
                 SELECT _id
-                FROM PWProd.office 
+                FROM PWDev.office 
                 WHERE title = :office AND agency = :agency AND jurisdiction = :jurisdiction
             """), {"office": office, "agency": agency, "jurisdiction": jurisdiction}).scalar_one_or_none()
             if office_id is None: 
                 office_id = connection.execute(sqlalchemy.text("""
-                    INSERT INTO PWProd.office (title, agency, jurisdiction, district_id)
+                    INSERT INTO PWDev.office (title, agency, jurisdiction, district_id)
                     VALUES (:office, :agency, :jurisdiction, :district_id)
                 """), {"office": office, "agency": agency, "jurisdiction": jurisdiction, "district_id": district_id}).lastrowid
             # insert election
             election_id = connection.execute(sqlalchemy.text("""
-                INSERT IGNORE INTO PWProd.election (office_id, type, year)
+                INSERT IGNORE INTO PWDev.election (office_id, type, year)
                 VALUES (:office_id, :election_type, :election_year)
             """), {"office_id": office_id, "election_type": election_type, "election_year": election_year}).lastrowid
         else:
             # insert office, no district
             office_id = connection.execute(sqlalchemy.text("""
                 SELECT _id
-                FROM PWProd.office 
+                FROM PWDev.office 
                 WHERE title = :office AND agency = :agency AND jurisdiction = :jurisdiction
             """), {"office": office, "agency": agency, "jurisdiction": jurisdiction}).scalar_one_or_none()
             if office_id is None: 
                 office_id = connection.execute(sqlalchemy.text("""
-                    INSERT INTO PWProd.office (title, agency, jurisdiction)
+                    INSERT INTO PWDev.office (title, agency, jurisdiction)
                     VALUES (:office, :agency, :jurisdiction)
                 """), {"office": office, "agency": agency, "jurisdiction": jurisdiction}).lastrowid
             # insert election
             election_id = connection.execute(sqlalchemy.text("""
-                INSERT IGNORE INTO PWProd.election (office_id, type, year)
+                INSERT IGNORE INTO PWDev.election (office_id, type, year)
                 VALUES (:office_id, :election_type, :election_year)
             """), {"office_id": office_id, "election_type": election_type, "election_year": election_year}).lastrowid
         # get information to fill person and candidate
@@ -410,9 +410,9 @@ with db.engine.begin() as connection:
         current_last = None
         result = connection.execute(sqlalchemy.text("""
             SELECT p._id, p.first, p.middle, p.last, c.party
-            FROM PWProd.filer_id f
-            JOIN PWProd.person p ON f.person_id = p._id
-            JOIN PWProd.candidate c ON c.person_id = p._id
+            FROM PWDev.filer_id f
+            JOIN PWDev.person p ON f.person_id = p._id
+            JOIN PWDev.candidate c ON c.person_id = p._id
             WHERE filer_id = :filer_id AND (first = :first OR first = :last)
         """), {"filer_id": filer_id, "first": first, "last": last}).fetchall()
         if result:
@@ -437,7 +437,7 @@ with db.engine.begin() as connection:
                         AND last = :last
                 """), {"first": first, "middle": middle_initial, "last": last}).scalar_one()
                 candidate_id = connection.execute(sqlalchemy.text("""
-                    INSERT INTO PWProd.person (DDDBPid, first, middle, last, title, suffix)
+                    INSERT INTO PWDev.person (DDDBPid, first, middle, last, title, suffix)
                     VALUES (:pid, :first, :middle, :last, :title, :suffix)
                 """), {"pid": dddb_pid, "first": first, "middle": middle, "last": last, "title": title, "suffix": suffix}).lastrowid
                 found = True
@@ -451,7 +451,7 @@ with db.engine.begin() as connection:
                             AND last = :last
                     """), {"first": first, "last": last}).scalar_one()
                     candidate_id = connection.execute(sqlalchemy.text("""
-                        INSERT INTO PWProd.person (DDDBPid, first, middle, last, title, suffix)
+                        INSERT INTO PWDev.person (DDDBPid, first, middle, last, title, suffix)
                         VALUES (:pid, :first, :middle, :last, :title, :suffix)
                     """), {"pid": dddb_pid, "first": first, "middle": middle, "last": last, "title": title, "suffix": suffix}).lastrowid
                     found = True
@@ -469,7 +469,7 @@ with db.engine.begin() as connection:
                                 AND source = 'TT_Lobbyist'
                         """), {"first": first, "last": last}).scalar_one()
                         candidate_id = connection.execute(sqlalchemy.text("""
-                            INSERT INTO PWProd.person (first, middle, last, title, suffix)
+                            INSERT INTO PWDev.person (first, middle, last, title, suffix)
                             VALUES (:first, :middle, :last, :title, :suffix)
                         """), {"first": first, "middle": middle, "last": last, "title": title, "suffix": suffix}).lastrowid
                         found = True
@@ -482,17 +482,17 @@ with db.engine.begin() as connection:
             if not found:
                 print("inserted new. no people or multiple found in dddb for:", filer_id, first, last)
                 candidate_id = connection.execute(sqlalchemy.text("""
-                    INSERT INTO PWProd.person (first, middle, last, title, suffix)
+                    INSERT INTO PWDev.person (first, middle, last, title, suffix)
                     VALUES (:first, :middle, :last, :title, :suffix)
                 """), {"first": first, "middle": middle, "last": last, "title": title, "suffix": suffix}).lastrowid
             # classify as candidate and associate with filer id
             connection.execute(sqlalchemy.text("""
-                INSERT IGNORE INTO PWProd.candidate (person_id, party)
+                INSERT IGNORE INTO PWDev.candidate (person_id, party)
                 VALUES (:pid, :party)
             """), {"pid": candidate_id, "party": party})
             if filer_id != "":
                 connection.execute(sqlalchemy.text("""
-                    INSERT INTO PWProd.filer_id (person_id, filer_id)
+                    INSERT INTO PWDev.filer_id (person_id, filer_id)
                     VALUES (:person_id, :filer_id)
                 """), {"person_id": candidate_id, "filer_id": filer_id})
         else:
@@ -503,34 +503,34 @@ with db.engine.begin() as connection:
             if first is not None and current_first is None:
                 # print("updated name:", current_first, first)
                 connection.execute(sqlalchemy.text("""
-                    UPDATE PWProd.person
+                    UPDATE PWDev.person
                     SET first = :first
                     WHERE _id = :pid
                 """), {"pid": person_id, "first": first})
             if middle is not None and current_middle is None:
                 # print("updated name:", current_middle, middle)
                 connection.execute(sqlalchemy.text("""
-                    UPDATE PWProd.person
+                    UPDATE PWDev.person
                     SET middle = :middle
                     WHERE _id = :pid
                 """), {"pid": person_id, "middle": middle})
             if last is not None and current_last is None:
                 # print("updated name:", current_last, last)
                 connection.execute(sqlalchemy.text("""
-                    UPDATE PWProd.person
+                    UPDATE PWDev.person
                     SET last = :last
                     WHERE _id = :pid
                 """), {"pid": person_id, "last": last})
             # if they filed with another party
             if party not in current_parties:
                 connection.execute(sqlalchemy.text("""
-                    INSERT IGNORE INTO PWProd.candidate (person_id, party)
+                    INSERT IGNORE INTO PWDev.candidate (person_id, party)
                     VALUES (:pid, :party)
                 """), {"pid": person_id, "party": party})
         filing_id = cand.filing_id if cand.filing_id else None
         amend_id = cand.amend_id if cand.amend_id else None
         # insert the running relation
         connection.execute(sqlalchemy.text("""
-            INSERT IGNORE INTO PWProd.running (candidate_id, election_office_id, election_type, election_year, 501_filing_id, 501_amendment_id)
+            INSERT IGNORE INTO PWDev.running (candidate_id, election_office_id, election_type, election_year, 501_filing_id, 501_amendment_id)
             VALUES (:candidate_id, :office_id, :election_type, :election_year, :filing_id, :amend_id)
         """), {"candidate_id": person_id, "office_id": office_id, "election_type": election_type, "election_year": election_year, "filing_id": filing_id, "amend_id": amend_id})

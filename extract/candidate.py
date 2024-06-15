@@ -46,7 +46,7 @@ with db.engine.begin() as conn:
         ), cte4 AS (
             SELECT * FROM cte3 WHERE 501_ord = 1
         )
-        SELECT * FROM cte4;
+        SELECT * FROM cte4 LIMIT 100;
     """)).all()
 
     cand_formatted = []
@@ -215,16 +215,16 @@ with db.engine.begin() as conn:
             DDDBPid = None
 
         id = conn.execute(sa.text("""
-            INSERT INTO PWDev.person (DDDBPid, first, middle, last, title)
+            INSERT INTO PWProd.person (DDDBPid, first, middle, last, title)
             VALUES (:dddbpid, :first, :middle, :last, :title)
         """), {"dddbpid": DDDBPid, "first": first, "middle": middle, "last": last, "title": title}).lastrowid
 
         conn.execute(sa.text("""
-            INSERT INTO PWDev.candidate (person_id, party) VALUES (:person_id, :party)
+            INSERT INTO PWProd.candidate (person_id, party) VALUES (:person_id, :party)
         """), {"person_id": id, "party": party})
 
         conn.execute(sa.text("""
-            INSERT INTO PWDev.filer_id (person_id, filer_id) VALUES (:person_id, :filer_id)
+            INSERT INTO PWProd.filer_id (person_id, filer_id) VALUES (:person_id, :filer_id)
         """), {"person_id": id, "filer_id": filer_id})
 
         cand_formatted.append({

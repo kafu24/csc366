@@ -95,3 +95,14 @@ Files can be found in `/extract/`. Run them to extract the following information
   - **candidate**
   - **person** for each candidate
   - **running** for each time a candidate runs for an office
+
+- `5_committee.py`: Committees, along with information about any associated ballot measure and candidate. Fills tables:
+  - **Organizations** when not found
+  - **filer_id** when new organization
+  - **committee**
+    - **ballot_committee** when type is marked as "B" and has all the necessary support to fill in ballot
+      - **ballot**
+      - **ballot_support**
+    - **candidate_committee** when the candidate exists in **candidate** and type is marked as "C" or control_YN is marked as "Y"
+    - **independent_committee** when type is marked as "P"
+    - **general_committee** when type is marked as "G"

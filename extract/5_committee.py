@@ -10,6 +10,7 @@ committee_orgs = []
 cand_formatted = []
 
 party_codes = {
+    None: "N/A",
     "": 'N/A',
     "0": 'N/A',
     "16001": 'DEMOCRATIC',
@@ -49,7 +50,7 @@ with db.engine.begin() as conn:
         entity_cd = org.ENTITY_CD.strip()
         org_name = org.FILER_NAML.strip()
         check_filer = conn.execute(sa.text("""
-            SELECT * FROM PWDev.filer_id WHERE filer_id = :filer_id
+            SELECT * FROM PWProd.filer_id WHERE filer_id = :filer_id
         """), {"filer_id": filer_id}).first()
         if check_filer is None:
             # check if it exists in DDDB, handle accordingly
@@ -101,7 +102,7 @@ with db.engine.begin() as conn:
             # associate organization with filer id
             if filer_id != "":
                 conn.execute(sa.text("""
-                    INSERT INTO PWDev.filer_id (organization_id, filer_id)
+                    INSERT INTO PWProd.filer_id (organization_id, filer_id)
                     VALUES (:org_id, :filer_id)
                 """), {"org_id": organization_id, "filer_id": filer_id})
         else:
@@ -111,7 +112,7 @@ with db.engine.begin() as conn:
         amend_id = org.AMEND_ID.strip()
 
         committee_insert = conn.execute(sa.text("""
-            INSERT IGNORE INTO PWDev.committee (organization_id, 410_filing_id, 410_amendment_id)
+            INSERT IGNORE INTO PWProd.committee (organization_id, 410_filing_id, 410_amendment_id)
             VALUES (:org_id, :filing_id, :amend_id)
         """), {"org_id": organization_id, "filing_id": filing_id, "amend_id": amend_id})
 
@@ -137,7 +138,7 @@ with db.engine.begin() as conn:
             party = row.party if row.party else None
             party_cd = row.party_cd if row.party_cd else None
             # convert party code to party
-            if party is None and party_cd is not None:
+            if party is None:
                 party = party_codes[party_cd]
             # fix for when they have their entire name in last field only
             if first is None:
@@ -164,9 +165,9 @@ with db.engine.begin() as conn:
             current_last = None
             result = conn.execute(sa.text("""
                 SELECT p._id, p.first, p.middle, p.last, c.party
-                FROM PWDev.filer_id f
-                JOIN PWDev.person p ON f.person_id = p._id
-                JOIN PWDev.candidate c ON c.person_id = p._id
+                FROM PWProd.filer_id f
+                JOIN PWProd.person p ON f.person_id = p._id
+                JOIN PWProd.candidate c ON c.person_id = p._id
                 WHERE filer_id = :filer_id AND (first = :first OR first = :last)
             """), {"filer_id": filer_id, "first": first, "last": last}).fetchall()
             if result:
@@ -193,37 +194,37 @@ with db.engine.begin() as conn:
             # Uh, this is a controlled committee, probably.
             if org.CMTTE_TYPE == "C" or org.CONTROL_YN == "Y":
                 conn.execute(sa.text("""
-                    INSERT IGNORE INTO PWDev.controlled_committee (committee_id, candidate_id) VALUES (:committee_id, :candidate_id)
+                    INSERT IGNORE INTO PWProd.controlled_committee (committee_id, candidate_id) VALUES (:committee_id, :candidate_id)
                 """), {"committee_id": organization_id, "candidate_id": id})
-            # This is also a ballot-measure committee, probably.
-            if org.CMTTE_TYPE == "B":
-                # TODO: See if you want to add CVR2 source to help? Seems contradictory sometimes.
-                if org.BAL_NUM and org.BAL_NAME and org.BAL_JURIS:
-                    bal_num = int(org.BAL_NUM)
-                    bal_name = org.BAL_NAME.strip()
-                    bal_juris = org.BAL_JURIS.strip()
-                    ls = org.ls
-                    pos = True if org.SUP_OPP_CD.upper() == "S" else False
-                    conn.execute(sa.text("""
-                        INSERT IGNORE INTO PWDev.ballot (ballot_number, legislative_session, name, jurisdiction)
-                        VALUES (:ballot_number, :legislative_session, :name, :jurisdiction)
-                    """), {"ballot_number": bal_num, "legislative_session": ls, "name": bal_name, "jurisdiction": bal_juris})
-                    conn.execute(sa.text("""
-                        INSERT IGNORE INTO PWDev.ballot_committee (committee_id) VALUES (:committee_id)
-                    """), {"committee_id": organization_id})
-                    conn.execute(sa.text("""
-                        INSERT IGNORE INTO PWDev.ballot_support (committee_id, ballot_number, legislative_session, position)
-                        VALUES (:committee_id, :ballot_number, :legislative_session, :position)
-                    """), {"committee_id": organization_id, "ballot_number": bal_num, "legislative_session": ls, "position": pos})
-            # This is also a general purpose committee, probably.
-            if org.CMTTE_TYPE == "G":
+        # This is also a ballot-measure committee, probably.
+        if org.CMTTE_TYPE == "B":
+            # TODO: See if you want to add CVR2 source to help? Seems contradictory sometimes.
+            if org.BAL_NUM and org.BAL_NAME and org.BAL_JURIS and len(org.BAL_NUM) <= 4:
+                bal_num = org.BAL_NUM.strip()
+                bal_name = org.BAL_NAME.strip()
+                bal_juris = org.BAL_JURIS.strip()
+                ls = org.ls
+                pos = True if org.SUP_OPP_CD.upper() == "S" else False
                 conn.execute(sa.text("""
-                    INSERT IGNORE INTO PWDev.general_committee (committee_id) VALUES (:committee_id)
-                """), {"committee_id": organization_id})
-            if org.CMTTE_TYPE == "P":
+                    INSERT IGNORE INTO PWProd.ballot (ballot_number, legislative_session, name, jurisdiction)
+                    VALUES (:ballot_number, :legislative_session, :name, :jurisdiction)
+                """), {"ballot_number": bal_num, "legislative_session": ls, "name": bal_name, "jurisdiction": bal_juris})
                 conn.execute(sa.text("""
-                    INSERT IGNORE INTO PWDev.independent_committee (committee_id) VALUES (:committee_id)
+                    INSERT IGNORE INTO PWProd.ballot_committee (committee_id) VALUES (:committee_id)
                 """), {"committee_id": organization_id})
+                conn.execute(sa.text("""
+                    INSERT IGNORE INTO PWProd.ballot_support (committee_id, ballot_number, legislative_session, position)
+                    VALUES (:committee_id, :ballot_number, :legislative_session, :position)
+                """), {"committee_id": organization_id, "ballot_number": bal_num, "legislative_session": ls, "position": pos})
+        # This is also a general purpose committee, probably.
+        if org.CMTTE_TYPE == "G":
+            conn.execute(sa.text("""
+                INSERT IGNORE INTO PWProd.general_committee (committee_id) VALUES (:committee_id)
+            """), {"committee_id": organization_id})
+        if org.CMTTE_TYPE == "P":
+            conn.execute(sa.text("""
+                INSERT IGNORE INTO PWProd.independent_committee (committee_id) VALUES (:committee_id)
+            """), {"committee_id": organization_id})
 
         committee_orgs.append({
             str((org_name, filer_id, entity_cd)): organization_id
